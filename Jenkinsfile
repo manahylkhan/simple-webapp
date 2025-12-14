@@ -26,11 +26,14 @@ pipeline {
                 }
             }
         }
-        stage('Deploy to Kubernetes') {
+       stage('Deploy to Kubernetes') {
             steps {
-                sh 'kubectl apply -f k8s/'
-            }
-        }
+                sh '''
+                export KUBECONFIG=/var/lib/jenkins/.kube/config
+                kubectl apply -f k8s/
+                '''
+    }
+}
         stage('Prometheus / Grafana') {
             steps {
                 echo 'Metrics exposed for Prometheus at http://<EC2-IP>:8080/prometheus'
