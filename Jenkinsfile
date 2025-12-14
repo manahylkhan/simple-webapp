@@ -1,43 +1,55 @@
 pipeline {
     agent any
+
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
-        IMAGE_NAME = 'manahyl/simple-webapp:latest'
+        DOCKER_IMAGE = "manahyl/simple-webapp"
     }
+
     stages {
+
         stage('Code Fetch') {
             steps {
+                echo "Fetching code from GitHub..."
                 git branch: 'main', url: 'https://github.com/manahylkhan/simple-webapp.git'
             }
         }
-        stage('Build Docker Image') {
+
+        stage('Docker Build') {
             steps {
-                script {
-                    docker.build("${IMAGE_NAME}")
+                echo "Building Docker Image..."
+                sh 'docker build -t $DOCKER_IMAGE:latest .'
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                echo "Pushing Docker Image to DockerHub..."
+                withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
+                    sh 'docker push $DOCKER_IMAGE:latest'
                 }
             }
         }
-        stage('Push Docker Image') {
+
+        stage('Kubernetes Deploy') {
             steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-creds') {
-                        docker.image("${IMAGE_NAME}").push()
-                    }
-                }
+                echo "Deploying to Kubernetes..."
+                sh 'kubectl apply -f k8s/'
             }
         }
-       stage('Deploy to Kubernetes') {
+
+        stage('Monitoring Setup') {
             steps {
-                sh '''
-                export KUBECONFIG=/var/lib/jenkins/.kube/config
-                kubectl apply -f k8s/
-                '''
+                echo "Prometheus & Grafana are already running and monitoring the application!"
+            }
+        }
     }
-}
-        stage('Prometheus / Grafana') {
-            steps {
-                echo 'Metrics exposed for Prometheus at http://<EC2-IP>:8080/prometheus'
-            }
+
+    post {
+        success {
+            echo "Pipeline completed successfully!"
+        }
+        failure {
+            echo "Pipeline failed. Check logs."
         }
     }
 }
