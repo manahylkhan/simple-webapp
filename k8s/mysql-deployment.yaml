@@ -20,6 +20,8 @@ spec:
           value: root
         - name: MYSQL_DATABASE
           value: testdb
+        ports:
+        - containerPort: 3306
         volumeMounts:
         - mountPath: /var/lib/mysql
           name: mysql-storage
