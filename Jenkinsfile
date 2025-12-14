@@ -7,7 +7,7 @@ pipeline {
     stages {
         stage('Code Fetch') {
             steps {
-                git 'https://github.com/manahylkhan/simple-webapp.git'
+                git branch: 'main', url: 'https://github.com/manahylkhan/simple-webapp.git'
             }
         }
         stage('Build Docker Image') {
