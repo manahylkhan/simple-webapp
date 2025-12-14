@@ -1,42 +1,39 @@
 pipeline {
     agent any
-
     environment {
-        DOCKER_IMAGE = "manahyl/simple-webapp"
-        KUBE_CONFIG = credentials('kubeconfig')
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
+        IMAGE_NAME = 'manahyl/simple-webapp:latest'
     }
-
     stages {
-
         stage('Code Fetch') {
             steps {
                 git 'https://github.com/manahylkhan/simple-webapp.git'
             }
         }
-
-        stage('Docker Build') {
+        stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $DOCKER_IMAGE:latest .'
-            }
-        }
-
-        stage('Docker Push') {
-            steps {
-                withDockerRegistry([credentialsId: 'dockerhub', url: '']) {
-                    sh 'docker push $DOCKER_IMAGE:latest'
+                script {
+                    docker.build("${IMAGE_NAME}")
                 }
             }
         }
-
-        stage('Kubernetes Deploy') {
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-creds') {
+                        docker.image("${IMAGE_NAME}").push()
+                    }
+                }
+            }
+        }
+        stage('Deploy to Kubernetes') {
             steps {
                 sh 'kubectl apply -f k8s/'
             }
         }
-
-        stage('Monitoring Setup') {
+        stage('Prometheus / Grafana') {
             steps {
-                echo "Prometheus & Grafana running"
+                echo 'Metrics exposed for Prometheus at http://<EC2-IP>:8080/prometheus'
             }
         }
     }
