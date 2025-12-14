@@ -33,13 +33,25 @@ pipeline {
         stage('Kubernetes Deploy') {
             steps {
                 echo "Deploying to Kubernetes..."
-                sh 'kubectl apply -f k8s/'
+                script {
+                    // Run kubectl as ubuntu user with sudo
+                    sh '''
+                        sudo -u ubuntu kubectl apply -f k8s/pvc.yaml
+                        sudo -u ubuntu kubectl apply -f k8s/mysql-deployment.yaml
+                        sudo -u ubuntu kubectl apply -f k8s/mysql-service.yaml
+                        sudo -u ubuntu kubectl apply -f k8s/deployment.yaml
+                        sudo -u ubuntu kubectl apply -f k8s/service.yaml
+                    '''
+                }
             }
         }
 
         stage('Monitoring Setup') {
             steps {
                 echo "Prometheus & Grafana are already running and monitoring the application!"
+                script {
+                    sh 'sudo -u ubuntu kubectl get pods --all-namespaces'
+                }
             }
         }
     }
