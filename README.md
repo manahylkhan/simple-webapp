@@ -1,6 +1,6 @@
 # 🚀 DevOps Lab Project – CI/CD Pipeline for Flask Web Application
 
-**Student:** Manahil Khan (FA22-BCT-013)  
+**Student:** Manahil Khan  
 **Course:** DevOps – Lab Project  
 
 This project demonstrates a **complete DevOps workflow** by building, containerizing, deploying, and monitoring a **Flask + MySQL web application** using **CI/CD automation, Docker, Kubernetes, Jenkins, Prometheus, and Grafana**.
